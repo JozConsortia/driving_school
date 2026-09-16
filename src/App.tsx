@@ -1,5 +1,6 @@
 import { Route, Routes } from "react-router-dom";
 import { Navbar } from "./components/Navbar";
+import { ChatWidget } from "./components/ChatWidget";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { Home } from "./pages/Home";
 import { Login } from "./pages/Login";
@@ -62,6 +63,7 @@ function App() {
           <Route path="*" element={<Home />} />
         </Routes>
       </main>
+      <ChatWidget />
     </div>
   );
 }

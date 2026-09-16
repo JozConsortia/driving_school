@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { api, getApiErrorMessage } from "../../api/client";
 import { useAuth } from "../../context/AuthContext";
-import { CarIcon, LocationIcon, UserIcon } from "../../components/icons";
+import { CarIcon, LocationIcon, MailIcon, PhoneIcon, UserIcon } from "../../components/icons";
 import { StarRating } from "../../components/StarRating";
 import type { AvailabilitySlot, SchoolProfile as SchoolProfileType } from "../../api/types";
 
@@ -91,7 +91,11 @@ export function SchoolProfile() {
         ← Back to search
       </Link>
 
-      <div className="mt-4 flex flex-wrap items-start justify-between gap-3">
+      <div className="mt-4 overflow-hidden rounded-2xl">
+        <img src="/images/profile-banner.jpg" alt="" className="aspect-[21/9] w-full object-cover sm:aspect-[3/1]" />
+      </div>
+
+      <div className="mt-5 flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-extrabold text-slate-900">{school.name}</h1>
           <p className="flex items-center gap-1.5 text-slate-500">
@@ -99,6 +103,20 @@ export function SchoolProfile() {
             {school.city}
             {school.address ? ` · ${school.address}` : ""}
           </p>
+          <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-sm text-slate-500">
+            {school.phone && (
+              <span className="flex items-center gap-1.5">
+                <PhoneIcon className="h-3.5 w-3.5 text-violet-500" />
+                {school.phone}
+              </span>
+            )}
+            {school.email && (
+              <span className="flex items-center gap-1.5">
+                <MailIcon className="h-3.5 w-3.5 text-violet-500" />
+                {school.email}
+              </span>
+            )}
+          </div>
         </div>
         <StarRating rating={school.avgRating} count={school.reviews.length} size="md" />
       </div>

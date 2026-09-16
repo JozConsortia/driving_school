@@ -68,9 +68,9 @@ export function LearnerSchedule() {
       <h1 className="text-2xl font-extrabold text-slate-900">My schedule</h1>
 
       <div className="mt-5 grid grid-cols-3 gap-3">
-        <StatTile icon={<CalendarIcon className="h-5 w-5" />} value={upcoming.length} label="Upcoming" />
-        <StatTile icon={<CheckCircleIcon className="h-5 w-5" />} value={completed.length} label="Completed" />
-        <StatTile icon={<XCircleIcon className="h-5 w-5" />} value={cancelled.length} label="Cancelled" />
+        <StatTile icon={<CalendarIcon className="h-5 w-5" />} value={upcoming.length} label="Upcoming" color="blue" />
+        <StatTile icon={<CheckCircleIcon className="h-5 w-5" />} value={completed.length} label="Completed" color="emerald" />
+        <StatTile icon={<XCircleIcon className="h-5 w-5" />} value={cancelled.length} label="Cancelled" color="rose" />
       </div>
 
       {error && <p className="mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}

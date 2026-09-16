@@ -1,11 +1,19 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { SearchIcon } from "./icons";
 
 const DASHBOARD_PATH: Record<string, string> = {
   LEARNER: "/learner/schedule",
   INSTRUCTOR: "/instructor",
   SCHOOL_ADMIN: "/school",
   SYSTEM_ADMIN: "/admin",
+};
+
+const ROLE_BADGE: Record<string, { label: string; className: string }> = {
+  LEARNER: { label: "Learner", className: "badge-blue" },
+  INSTRUCTOR: { label: "Instructor", className: "badge-green" },
+  SCHOOL_ADMIN: { label: "School Admin", className: "badge-violet" },
+  SYSTEM_ADMIN: { label: "Admin", className: "badge-amber" },
 };
 
 function Logo() {
@@ -34,16 +42,21 @@ export function Navbar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
+  const roleBadge = user ? ROLE_BADGE[user.role] : null;
+
   return (
     <header className="sticky top-0 z-20 border-b border-slate-200/80 bg-white/85 backdrop-blur-sm">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
         <Link to="/" className="flex items-center gap-2">
           <Logo />
-          <span className="font-display text-lg font-extrabold tracking-tight text-slate-900">DriveSmart</span>
+          <span className="font-display bg-gradient-to-r from-violet-600 to-sky-500 bg-clip-text text-lg font-extrabold tracking-tight text-transparent">
+            DriveSmart
+          </span>
         </Link>
         <nav className="flex items-center gap-3 text-sm sm:gap-4">
-          <Link to="/search" className="font-medium text-slate-600 hover:text-violet-600">
-            Find a school
+          <Link to="/search" className="flex items-center gap-1.5 font-medium text-slate-600 hover:text-violet-600">
+            <SearchIcon className="h-4 w-4 text-violet-500" />
+            <span className="hidden sm:inline">Find a school</span>
           </Link>
           {user ? (
             <>
@@ -53,7 +66,10 @@ export function Navbar() {
               >
                 My dashboard
               </Link>
-              <span className="hidden max-w-[8rem] truncate font-medium text-slate-700 md:inline">{user.name}</span>
+              <span className="hidden items-center gap-2 md:flex">
+                <span className="max-w-[8rem] truncate font-medium text-slate-700">{user.name}</span>
+                {roleBadge && <span className={`badge ${roleBadge.className}`}>{roleBadge.label}</span>}
+              </span>
               <button
                 onClick={() => {
                   logout();
@@ -76,6 +92,7 @@ export function Navbar() {
           )}
         </nav>
       </div>
+      <div className="h-[3px] bg-gradient-to-r from-violet-500 via-sky-400 to-pink-400" />
     </header>
   );
 }

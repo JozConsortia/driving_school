@@ -72,14 +72,15 @@ export function SchoolDashboard() {
       {tab === "overview" && (
         <div className="mt-6">
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <StatTile icon={<CalendarIcon className="h-5 w-5" />} value={todaysLessons.length} label="Today's lessons" />
+            <StatTile icon={<CalendarIcon className="h-5 w-5" />} value={todaysLessons.length} label="Today's lessons" color="blue" />
             <StatTile
               icon={<UsersIcon className="h-5 w-5" />}
               value={school.instructors.filter((i) => i.status === "ACTIVE").length}
               label="Active instructors"
+              color="violet"
             />
-            <StatTile icon={<CarIcon className="h-5 w-5" />} value={school.vehicles.length} label="Vehicles" />
-            <StatTile icon={<ClipboardIcon className="h-5 w-5" />} value={bookings.length} label="Total bookings" />
+            <StatTile icon={<CarIcon className="h-5 w-5" />} value={school.vehicles.length} label="Vehicles" color="amber" />
+            <StatTile icon={<ClipboardIcon className="h-5 w-5" />} value={bookings.length} label="Total bookings" color="emerald" />
           </div>
 
           <div className="card mt-5 flex flex-wrap items-center justify-between gap-3 p-5">

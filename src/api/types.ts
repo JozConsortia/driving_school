@@ -84,6 +84,16 @@ export interface Booking {
   lessonRecord?: { notes: string | null; progress: string | null; attendance: string } | null;
 }
 
+export interface ChatMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+
+export interface ChatResponse {
+  reply: string;
+  schools: SchoolSearchResult[];
+}
+
 export interface Notification {
   id: string;
   message: string;

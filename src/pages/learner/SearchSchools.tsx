@@ -6,6 +6,7 @@ import { StarRating } from "../../components/StarRating";
 import type { LicenceCategory, SchoolSearchResult } from "../../api/types";
 
 const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+const CARD_IMAGES = ["/images/card-1.jpg", "/images/card-2.jpg", "/images/card-3.jpg", "/images/card-4.jpg"];
 
 export function SearchSchools() {
   const [categories, setCategories] = useState<LicenceCategory[]>([]);
@@ -102,37 +103,40 @@ export function SearchSchools() {
         {!loading && results.length === 0 && (
           <div className="card p-8 text-center text-slate-500">No driving schools match your search.</div>
         )}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {results.map((school) => (
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {results.map((school, i) => (
             <Link
               key={school.id}
               to={`/schools/${school.id}`}
-              className="card block p-5 transition hover:-translate-y-0.5 hover:border-violet-300 hover:shadow-md"
+              className="card block overflow-hidden transition hover:-translate-y-0.5 hover:border-violet-300 hover:shadow-md"
             >
-              <h2 className="font-display font-bold text-slate-900">{school.name}</h2>
-              <StarRating rating={school.avgRating} count={school.reviewCount} size="sm" className="mt-1" />
-              <p className="mt-2 flex items-center gap-1 text-sm text-slate-500">
-                <LocationIcon className="h-3.5 w-3.5" />
-                {school.city}
-              </p>
-              {school.description && <p className="mt-2 text-sm text-slate-600 line-clamp-2">{school.description}</p>}
-              <div className="mt-3 flex flex-wrap gap-1.5">
-                {school.services.map((s) => (
-                  <span key={s.licenceCategory} className="badge badge-violet">
-                    {s.licenceCategory}: R{s.pricePerHour}/hr
+              <img src={CARD_IMAGES[i % CARD_IMAGES.length]} alt="" className="aspect-video w-full object-cover" />
+              <div className="p-5">
+                <h2 className="font-display font-bold text-slate-900">{school.name}</h2>
+                <StarRating rating={school.avgRating} count={school.reviewCount} size="sm" className="mt-1" />
+                <p className="mt-2 flex items-center gap-1 text-sm text-slate-500">
+                  <LocationIcon className="h-3.5 w-3.5" />
+                  {school.city}
+                </p>
+                {school.description && <p className="mt-2 text-sm text-slate-600 line-clamp-2">{school.description}</p>}
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {school.services.map((s) => (
+                    <span key={s.licenceCategory} className="badge badge-violet">
+                      {s.licenceCategory}: R{s.pricePerHour}/hr
+                    </span>
+                  ))}
+                </div>
+                <p className="mt-3 flex items-center gap-3 text-xs text-slate-500">
+                  <span className="flex items-center gap-1">
+                    <UsersIcon className="h-3.5 w-3.5" />
+                    {school.instructorCount} instructor(s)
                   </span>
-                ))}
+                  <span className="flex items-center gap-1">
+                    <CarIcon className="h-3.5 w-3.5" />
+                    {school.vehicleTypes.join(", ") || "No vehicles listed"}
+                  </span>
+                </p>
               </div>
-              <p className="mt-3 flex items-center gap-3 text-xs text-slate-500">
-                <span className="flex items-center gap-1">
-                  <UsersIcon className="h-3.5 w-3.5" />
-                  {school.instructorCount} instructor(s)
-                </span>
-                <span className="flex items-center gap-1">
-                  <CarIcon className="h-3.5 w-3.5" />
-                  {school.vehicleTypes.join(", ") || "No vehicles listed"}
-                </span>
-              </p>
             </Link>
           ))}
         </div>

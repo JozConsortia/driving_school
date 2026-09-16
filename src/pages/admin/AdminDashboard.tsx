@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { api, getApiErrorMessage } from "../../api/client";
-import { StatTile } from "../../components/StatTile";
+import { StatTile, type StatTileColor } from "../../components/StatTile";
 import { StarRating } from "../../components/StarRating";
 import {
   BuildingIcon,
@@ -32,7 +32,7 @@ interface AdminSchool {
   city: string;
   status: string;
   owner: { name: string; email: string; phone: string | null };
-  _count: { instructors: number; vehicles: number; bookings: number };
+  counts: { instructors: number; vehicles: number; bookings: number };
 }
 
 interface AdminUser {
@@ -79,16 +79,16 @@ export function AdminDashboard() {
       {tab === "overview" && stats && (
         <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
           {[
-            { label: "Total users", value: stats.totalUsers, icon: UsersIcon },
-            { label: "Learners", value: stats.totalLearners, icon: UserIcon },
-            { label: "Instructors", value: stats.totalInstructors, icon: SteeringWheelIcon },
-            { label: "Driving schools", value: stats.totalSchools, icon: BuildingIcon },
-            { label: "Approved schools", value: stats.approvedSchools, icon: CheckCircleIcon },
-            { label: "Pending schools", value: stats.pendingSchools, icon: ClockIcon },
-            { label: "Total bookings", value: stats.totalBookings, icon: ClipboardIcon },
-            { label: "Completed lessons", value: stats.completedBookings, icon: CarIcon },
+            { label: "Total users", value: stats.totalUsers, icon: UsersIcon, color: "violet" },
+            { label: "Learners", value: stats.totalLearners, icon: UserIcon, color: "blue" },
+            { label: "Instructors", value: stats.totalInstructors, icon: SteeringWheelIcon, color: "amber" },
+            { label: "Driving schools", value: stats.totalSchools, icon: BuildingIcon, color: "violet" },
+            { label: "Approved schools", value: stats.approvedSchools, icon: CheckCircleIcon, color: "emerald" },
+            { label: "Pending schools", value: stats.pendingSchools, icon: ClockIcon, color: "amber" },
+            { label: "Total bookings", value: stats.totalBookings, icon: ClipboardIcon, color: "blue" },
+            { label: "Completed lessons", value: stats.completedBookings, icon: CarIcon, color: "emerald" },
           ].map((s) => (
-            <StatTile key={s.label} icon={<s.icon className="h-5 w-5" />} value={s.value} label={s.label} />
+            <StatTile key={s.label} icon={<s.icon className="h-5 w-5" />} value={s.value} label={s.label} color={s.color as StatTileColor} />
           ))}
         </div>
       )}
@@ -141,7 +141,7 @@ function SchoolsTab({ setError }: { setError: (e: string | null) => void }) {
                   Owner: {s.owner.name} ({s.owner.email})
                 </p>
                 <p className="text-sm text-slate-500">
-                  {s._count.instructors} instructors · {s._count.vehicles} vehicles · {s._count.bookings} bookings
+                  {s.counts.instructors} instructors · {s.counts.vehicles} vehicles · {s.counts.bookings} bookings
                 </p>
               </div>
               <span className="badge badge-slate">{s.status}</span>

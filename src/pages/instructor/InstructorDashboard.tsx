@@ -44,12 +44,14 @@ export function InstructorDashboard() {
           icon={<CalendarIcon className="h-5 w-5" />}
           value={bookings.filter((b) => b.status === "CONFIRMED").length}
           label="Upcoming lessons"
+          color="blue"
         />
-        <StatTile icon={<UsersIcon className="h-5 w-5" />} value={learners.length} label="Assigned learners" />
+        <StatTile icon={<UsersIcon className="h-5 w-5" />} value={learners.length} label="Assigned learners" color="violet" />
         <StatTile
           icon={<CheckCircleIcon className="h-5 w-5" />}
           value={bookings.filter((b) => b.status === "COMPLETED").length}
           label="Completed"
+          color="emerald"
         />
       </div>
 
