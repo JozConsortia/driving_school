@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import { api, getApiErrorMessage } from "../../api/client";
 import { StatTile } from "../../components/StatTile";
 import { CalendarIcon, CheckCircleIcon, UsersIcon } from "../../components/icons";
-import type { AvailabilitySlot, Booking } from "../../api/types";
+import type { AvailabilitySlot, Booking, Instructor } from "../../api/types";
 
-type Tab = "schedule" | "availability";
+type Tab = "schedule" | "availability" | "profile";
 
 const STATUS_BADGE: Record<string, string> = {
   PENDING: "badge-amber",
@@ -56,7 +56,7 @@ export function InstructorDashboard() {
       </div>
 
       <div className="mt-6 flex gap-1 border-b border-slate-200">
-        {(["schedule", "availability"] as Tab[]).map((t) => (
+        {(["schedule", "availability", "profile"] as Tab[]).map((t) => (
           <button key={t} onClick={() => setTab(t)} className={`tab-btn capitalize ${tab === t ? "tab-btn-active" : ""}`}>
             {t}
           </button>
@@ -95,6 +95,7 @@ export function InstructorDashboard() {
       )}
 
       {tab === "availability" && <AvailabilityTab slots={slots} reload={loadSlots} setError={setError} />}
+      {tab === "profile" && <ProfileTab setError={setError} />}
 
       {completing && (
         <CompleteLessonModal
@@ -244,5 +245,60 @@ function CompleteLessonModal({
         </div>
       </form>
     </div>
+  );
+}
+
+function ProfileTab({ setError }: { setError: (e: string | null) => void }) {
+  const [profile, setProfile] = useState<Instructor | null>(null);
+  const [bio, setBio] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    api.get<Instructor>("/instructors/me").then((res) => {
+      setProfile(res.data);
+      setBio(res.data.bio ?? "");
+    });
+  }, []);
+
+  async function save(e: React.FormEvent) {
+    e.preventDefault();
+    setSaving(true);
+    setSaved(false);
+    try {
+      const res = await api.put<Instructor>("/instructors/me", { bio });
+      setProfile(res.data);
+      setSaved(true);
+    } catch (err) {
+      setError(getApiErrorMessage(err));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (!profile) return <p className="mt-6 text-slate-500">Loading...</p>;
+
+  return (
+    <form onSubmit={save} className="card mt-6 max-w-lg space-y-4 p-6">
+      <div>
+        <label className="field-label">Name</label>
+        <input value={profile.user.name} disabled className="input bg-slate-50 text-slate-500" />
+      </div>
+      <div>
+        <label className="field-label">Bio</label>
+        <textarea
+          value={bio}
+          onChange={(e) => setBio(e.target.value)}
+          placeholder="Tell learners about your experience and teaching style..."
+          className="input"
+          rows={4}
+        />
+        <p className="mt-1 text-xs text-slate-400">This appears on your school's public profile page.</p>
+      </div>
+      {saved && <p className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700">Saved!</p>}
+      <button disabled={saving} className="btn btn-primary">
+        {saving ? "Saving..." : "Save bio"}
+      </button>
+    </form>
   );
 }

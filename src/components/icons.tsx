@@ -136,6 +136,15 @@ export function SendIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
+export function BellIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <path d="M6 10.5a6 6 0 0 1 12 0c0 4 1.5 5.5 1.5 5.5h-15S6 14.5 6 10.5Z" />
+      <path d="M10.3 19.5a1.9 1.9 0 0 0 3.4 0" />
+    </Icon>
+  );
+}
+
 export function PhoneIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <Icon {...props}>

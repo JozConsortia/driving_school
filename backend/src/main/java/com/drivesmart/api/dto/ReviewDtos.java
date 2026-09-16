@@ -15,4 +15,9 @@ public class ReviewDtos {
             @Min(1) @Max(5) int rating,
             String comment
     ) {}
+
+    public record UpdateRequest(
+            @Min(1) @Max(5) int rating,
+            String comment
+    ) {}
 }

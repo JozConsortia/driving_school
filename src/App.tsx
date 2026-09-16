@@ -5,6 +5,7 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import { Home } from "./pages/Home";
 import { Login } from "./pages/Login";
 import { Register } from "./pages/Register";
+import { Profile } from "./pages/Profile";
 import { SearchSchools } from "./pages/learner/SearchSchools";
 import { SchoolProfile } from "./pages/learner/SchoolProfile";
 import { LearnerSchedule } from "./pages/learner/LearnerSchedule";
@@ -23,6 +24,15 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/search" element={<SearchSchools />} />
           <Route path="/schools/:id" element={<SchoolProfile />} />
+
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            }
+          />
 
           <Route
             path="/learner/schedule"

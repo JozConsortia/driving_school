@@ -119,8 +119,12 @@ export function SchoolDashboard() {
 
 function BookingsTab({ bookings, reload, setError }: { bookings: Booking[]; reload: () => void; setError: (e: string | null) => void }) {
   async function act(id: string, status: "CONFIRMED" | "REJECTED" | "CANCELLED") {
+    let reason: string | undefined;
+    if (status === "REJECTED" || status === "CANCELLED") {
+      reason = prompt(`Reason for ${status === "REJECTED" ? "rejecting" : "cancelling"} (optional):`) ?? undefined;
+    }
     try {
-      await api.put(`/bookings/${id}/status`, { status });
+      await api.put(`/bookings/${id}/status`, { status, reason });
       reload();
     } catch (err) {
       setError(getApiErrorMessage(err));
@@ -139,6 +143,7 @@ function BookingsTab({ bookings, reload, setError }: { bookings: Booking[]; relo
               <p className="text-sm text-slate-500">
                 Learner: {b.learner?.user.name} · Instructor: {b.instructor?.user.name} · {b.licenceCategory?.code}
               </p>
+              {b.cancellationReason && <p className="text-sm text-slate-500">Reason: {b.cancellationReason}</p>}
             </div>
             <span className={`badge ${STATUS_BADGE[b.status]} shrink-0`}>{b.status}</span>
           </div>

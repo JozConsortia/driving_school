@@ -161,7 +161,7 @@ public class BookingService {
     }
 
     @Transactional
-    public BookingDto updateStatus(String userId, Role role, String bookingId, String newStatus) {
+    public BookingDto updateStatus(String userId, Role role, String bookingId, String newStatus, String reason) {
         Booking booking = authorize(userId, role, bookingId);
 
         if (role == Role.LEARNER && !newStatus.equals("CANCELLED")) {
@@ -173,6 +173,9 @@ public class BookingService {
 
         boolean freeingSlot = newStatus.equals("REJECTED") || newStatus.equals("CANCELLED");
         booking.setStatus(newStatus);
+        if (freeingSlot && reason != null && !reason.isBlank()) {
+            booking.setCancellationReason(reason);
+        }
         bookingRepository.save(booking);
 
         if (freeingSlot) {
@@ -184,7 +187,8 @@ public class BookingService {
             });
         }
 
-        String message = "Your lesson on " + booking.getDate() + " at " + booking.getStartTime() + " was " + newStatus.toLowerCase();
+        String message = "Your lesson on " + booking.getDate() + " at " + booking.getStartTime() + " was " + newStatus.toLowerCase()
+                + (freeingSlot && reason != null && !reason.isBlank() ? " (reason: " + reason + ")" : "");
         notificationService.notify(booking.getInstructor().getUser(), message);
         notificationService.notify(booking.getLearner().getUser(), message);
 
@@ -282,7 +286,8 @@ public class BookingService {
                         b.getLearner().getUser().getEmail(), b.getLearner().getUser().getPhone())),
                 vehicleDto,
                 new LicenceCategoryDto(b.getLicenceCategory().getId(), b.getLicenceCategory().getCode(), b.getLicenceCategory().getName()),
-                lessonRecordView
+                lessonRecordView,
+                b.getCancellationReason()
         );
     }
 }

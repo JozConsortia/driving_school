@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DayOfWeek;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -41,7 +42,7 @@ public class SchoolService {
     }
 
     @Transactional(readOnly = true)
-    public List<SearchResult> search(String city, String licenceCategory, Double maxPrice, Double minRating, Integer day) {
+    public List<SearchResult> search(String city, String licenceCategory, Double maxPrice, Double minRating, Integer day, String sort) {
         List<DrivingSchool> schools = (city == null || city.isBlank())
                 ? schoolRepository.findByStatus("APPROVED")
                 : schoolRepository.findByStatusAndCityContainingIgnoreCase("APPROVED", city);
@@ -91,6 +92,7 @@ public class SchoolService {
                         x.v.stream().map(Vehicle::getTransmission).distinct().toList(),
                         x.i.size()
                 ))
+                .sorted(resultComparator(sort))
                 .toList();
     }
 
@@ -179,11 +181,27 @@ public class SchoolService {
                 )).toList(),
                 vehicles.stream().map(v -> new VehicleDto(v.getId(), v.getMake(), v.getModel(), v.getYear(), v.getLicencePlate(), v.getTransmission(), v.getStatus())).toList(),
                 reviews.stream().map(r -> new ReviewView(r.getId(), r.getRating(), r.getComment(), r.getCreatedAt(),
-                        new NameOnly(r.getUser().getName()))).toList()
+                        r.getUser().getId(), new NameOnly(r.getUser().getName()))).toList()
         );
     }
 
     private static int jsDayOfWeek(DayOfWeek dow) {
         return dow.getValue() % 7; // ISO Monday=1..Sunday=7 -> JS Sunday=0..Saturday=6
+    }
+
+    private static Comparator<SearchResult> resultComparator(String sort) {
+        if (sort == null) return (a, b) -> 0;
+        return switch (sort) {
+            case "rating" -> Comparator.comparing(
+                    (SearchResult r) -> r.avgRating() == null ? -1.0 : r.avgRating(),
+                    Comparator.reverseOrder());
+            case "price_low" -> Comparator.comparingDouble(SchoolService::minPrice);
+            case "price_high" -> Comparator.comparingDouble(SchoolService::minPrice).reversed();
+            default -> (a, b) -> 0;
+        };
+    }
+
+    private static double minPrice(SearchResult r) {
+        return r.services().stream().mapToDouble(ServicePrice::pricePerHour).min().orElse(Double.MAX_VALUE);
     }
 }

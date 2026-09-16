@@ -1,6 +1,7 @@
 package com.drivesmart.api.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 
 public class VehicleDtos {
 
@@ -12,5 +13,5 @@ public class VehicleDtos {
             String transmission
     ) {}
 
-    public record StatusRequest(@NotBlank String status) {}
+    public record StatusRequest(@NotBlank @Pattern(regexp = "ACTIVE|INACTIVE") String status) {}
 }

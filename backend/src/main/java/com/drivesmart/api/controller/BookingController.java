@@ -48,7 +48,7 @@ public class BookingController {
     @PutMapping("/{id}/status")
     @PreAuthorize("hasAnyRole('SCHOOL_ADMIN','INSTRUCTOR','LEARNER')")
     public BookingDto updateStatus(@PathVariable String id, @Valid @RequestBody StatusRequest req) {
-        return bookingService.updateStatus(CurrentUser.require(), CurrentUser.role(), id, req.status());
+        return bookingService.updateStatus(CurrentUser.require(), CurrentUser.role(), id, req.status(), req.reason());
     }
 
     @PutMapping("/{id}/reschedule")

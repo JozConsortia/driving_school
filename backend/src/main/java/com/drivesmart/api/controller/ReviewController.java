@@ -2,6 +2,7 @@ package com.drivesmart.api.controller;
 
 import com.drivesmart.api.dto.ReviewDtos.CreateRequest;
 import com.drivesmart.api.dto.ReviewDtos.ReviewView;
+import com.drivesmart.api.dto.ReviewDtos.UpdateRequest;
 import com.drivesmart.api.security.CurrentUser;
 import com.drivesmart.api.service.ReviewService;
 import jakarta.validation.Valid;
@@ -34,8 +35,22 @@ public class ReviewController {
     }
 
     @PutMapping("/{id}/report")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> report(@PathVariable String id) {
-        reviewService.report(id);
+        reviewService.report(CurrentUser.require(), id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('LEARNER')")
+    public ReviewView update(@PathVariable String id, @Valid @RequestBody UpdateRequest req) {
+        return reviewService.update(CurrentUser.require(), id, req);
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('LEARNER')")
+    public ResponseEntity<Void> delete(@PathVariable String id) {
+        reviewService.delete(CurrentUser.require(), id);
         return ResponseEntity.noContent().build();
     }
 }

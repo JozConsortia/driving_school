@@ -51,6 +51,9 @@ public class Booking {
     @Column(nullable = false)
     private String status = "PENDING";
 
+    @Column(length = 500)
+    private String cancellationReason;
+
     @Column(nullable = false, updatable = false)
     private Instant createdAt = Instant.now();
 }

@@ -164,7 +164,7 @@ public class ChatService {
         Integer day = asInteger(args.get("day"));
 
         try {
-            return schoolService.search(city, licenceCategory, maxPrice, minRating, day);
+            return schoolService.search(city, licenceCategory, maxPrice, minRating, day, "rating");
         } catch (Exception e) {
             log.error("search_driving_schools function execution failed", e);
             return List.of();

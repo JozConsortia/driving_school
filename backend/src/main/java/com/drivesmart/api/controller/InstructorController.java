@@ -3,6 +3,7 @@ package com.drivesmart.api.controller;
 import com.drivesmart.api.dto.CommonDtos.InstructorDto;
 import com.drivesmart.api.dto.InstructorDtos.CreateRequest;
 import com.drivesmart.api.dto.InstructorDtos.StatusRequest;
+import com.drivesmart.api.dto.InstructorDtos.UpdateBioRequest;
 import com.drivesmart.api.security.CurrentUser;
 import com.drivesmart.api.service.InstructorService;
 import jakarta.validation.Valid;
@@ -44,5 +45,17 @@ public class InstructorController {
     @PreAuthorize("hasRole('SCHOOL_ADMIN')")
     public InstructorDto updateStatus(@PathVariable String id, @Valid @RequestBody StatusRequest req) {
         return instructorService.updateStatus(CurrentUser.require(), id, req.status());
+    }
+
+    @GetMapping("/me")
+    @PreAuthorize("hasRole('INSTRUCTOR')")
+    public InstructorDto me() {
+        return instructorService.getMine(CurrentUser.require());
+    }
+
+    @PutMapping("/me")
+    @PreAuthorize("hasRole('INSTRUCTOR')")
+    public InstructorDto updateMe(@RequestBody UpdateBioRequest req) {
+        return instructorService.updateMyBio(CurrentUser.require(), req.bio());
     }
 }

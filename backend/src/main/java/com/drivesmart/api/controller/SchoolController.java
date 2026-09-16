@@ -27,8 +27,9 @@ public class SchoolController {
             @RequestParam(required = false) String licenceCategory,
             @RequestParam(required = false) Double maxPrice,
             @RequestParam(required = false) Double minRating,
-            @RequestParam(required = false) Integer day) {
-        return schoolService.search(city, licenceCategory, maxPrice, minRating, day);
+            @RequestParam(required = false) Integer day,
+            @RequestParam(required = false) String sort) {
+        return schoolService.search(city, licenceCategory, maxPrice, minRating, day, sort);
     }
 
     @GetMapping("/{id}")

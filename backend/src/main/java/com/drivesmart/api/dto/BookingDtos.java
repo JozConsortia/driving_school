@@ -18,7 +18,8 @@ public class BookingDtos {
     public record BookingDto(
             String id, LocalDate date, String startTime, String endTime, String status,
             SchoolView school, InstructorView instructor, LearnerView learner,
-            VehicleDto vehicle, LicenceCategoryDto licenceCategory, LessonRecordView lessonRecord
+            VehicleDto vehicle, LicenceCategoryDto licenceCategory, LessonRecordView lessonRecord,
+            String cancellationReason
     ) {}
 
     public record CreateRequest(
@@ -32,7 +33,8 @@ public class BookingDtos {
     ) {}
 
     public record StatusRequest(
-            @NotBlank @Pattern(regexp = "CONFIRMED|REJECTED|CANCELLED") String status
+            @NotBlank @Pattern(regexp = "CONFIRMED|REJECTED|CANCELLED") String status,
+            @jakarta.validation.constraints.Size(max = 500) String reason
     ) {}
 
     public record RescheduleRequest(

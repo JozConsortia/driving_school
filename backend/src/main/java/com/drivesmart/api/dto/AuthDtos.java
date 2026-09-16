@@ -30,4 +30,14 @@ public class AuthDtos {
             String id, String name, String email, String phone, Role role, String status,
             java.time.Instant createdAt
     ) {}
+
+    public record UpdateProfileRequest(
+            @NotBlank @Size(min = 2) String name,
+            String phone
+    ) {}
+
+    public record ChangePasswordRequest(
+            @NotBlank String currentPassword,
+            @NotBlank @Size(min = 6) String newPassword
+    ) {}
 }

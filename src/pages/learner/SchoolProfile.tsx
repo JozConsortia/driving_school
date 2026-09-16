@@ -25,6 +25,11 @@ export function SchoolProfile() {
   const [reviewComment, setReviewComment] = useState("");
   const [reviewMessage, setReviewMessage] = useState<string | null>(null);
 
+  const [editingReviewId, setEditingReviewId] = useState<string | null>(null);
+  const [editRating, setEditRating] = useState(5);
+  const [editComment, setEditComment] = useState("");
+  const [reviewActionError, setReviewActionError] = useState<string | null>(null);
+
   useEffect(() => {
     api.get<SchoolProfileType>(`/schools/${id}`).then((res) => {
       setSchool(res.data);
@@ -80,6 +85,37 @@ export function SchoolProfile() {
       setSchool(res.data);
     } catch (err) {
       setReviewMessage(getApiErrorMessage(err));
+    }
+  }
+
+  function startEditReview(r: SchoolProfileType["reviews"][number]) {
+    setEditingReviewId(r.id);
+    setEditRating(r.rating);
+    setEditComment(r.comment ?? "");
+    setReviewActionError(null);
+  }
+
+  async function saveEditReview(reviewId: string) {
+    setReviewActionError(null);
+    try {
+      await api.put(`/reviews/${reviewId}`, { rating: editRating, comment: editComment });
+      setEditingReviewId(null);
+      const res = await api.get<SchoolProfileType>(`/schools/${id}`);
+      setSchool(res.data);
+    } catch (err) {
+      setReviewActionError(getApiErrorMessage(err));
+    }
+  }
+
+  async function deleteReview(reviewId: string) {
+    if (!confirm("Delete this review?")) return;
+    setReviewActionError(null);
+    try {
+      await api.delete(`/reviews/${reviewId}`);
+      const res = await api.get<SchoolProfileType>(`/schools/${id}`);
+      setSchool(res.data);
+    } catch (err) {
+      setReviewActionError(getApiErrorMessage(err));
     }
   }
 
@@ -247,16 +283,50 @@ export function SchoolProfile() {
           <h2 className="section-title">Reviews</h2>
           <StarRating rating={school.avgRating} count={school.reviews.length} size="sm" />
         </div>
+        {reviewActionError && <p className="mt-2 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{reviewActionError}</p>}
         <div className="mt-3 space-y-3">
-          {school.reviews.map((r) => (
-            <div key={r.id} className="border-b border-slate-100 pb-3 last:border-0">
-              <div className="flex items-center gap-2">
-                <p className="text-sm font-semibold text-slate-800">{r.user.name}</p>
-                <StarRating rating={r.rating} showValue={false} size="sm" />
+          {school.reviews.map((r) =>
+            editingReviewId === r.id ? (
+              <div key={r.id} className="border-b border-slate-100 pb-3 last:border-0">
+                <select value={editRating} onChange={(e) => setEditRating(Number(e.target.value))} className="input w-auto">
+                  {[5, 4, 3, 2, 1].map((n) => (
+                    <option key={n} value={n}>
+                      {n} star{n > 1 ? "s" : ""}
+                    </option>
+                  ))}
+                </select>
+                <textarea value={editComment} onChange={(e) => setEditComment(e.target.value)} className="input mt-2" rows={2} />
+                <div className="mt-2 flex gap-2">
+                  <button onClick={() => saveEditReview(r.id)} className="btn btn-primary btn-sm">
+                    Save
+                  </button>
+                  <button onClick={() => setEditingReviewId(null)} className="btn btn-outline btn-sm">
+                    Cancel
+                  </button>
+                </div>
               </div>
-              {r.comment && <p className="mt-0.5 text-sm text-slate-600">{r.comment}</p>}
-            </div>
-          ))}
+            ) : (
+              <div key={r.id} className="border-b border-slate-100 pb-3 last:border-0">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-semibold text-slate-800">{r.user.name}</p>
+                    <StarRating rating={r.rating} showValue={false} size="sm" />
+                  </div>
+                  {user?.id === r.userId && (
+                    <div className="flex shrink-0 gap-2 text-xs font-medium">
+                      <button onClick={() => startEditReview(r)} className="text-violet-600 hover:text-violet-700">
+                        Edit
+                      </button>
+                      <button onClick={() => deleteReview(r.id)} className="text-red-600 hover:text-red-700">
+                        Delete
+                      </button>
+                    </div>
+                  )}
+                </div>
+                {r.comment && <p className="mt-0.5 text-sm text-slate-600">{r.comment}</p>}
+              </div>
+            )
+          )}
           {school.reviews.length === 0 && (
             <p className="rounded-lg bg-slate-50 px-3 py-6 text-center text-sm text-slate-400">
               No reviews yet — be the first to share your experience!

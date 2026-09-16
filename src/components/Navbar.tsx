@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { SearchIcon } from "./icons";
+import { NotificationBell } from "./NotificationBell";
 
 const DASHBOARD_PATH: Record<string, string> = {
   LEARNER: "/learner/schedule",
@@ -66,10 +67,11 @@ export function Navbar() {
               >
                 My dashboard
               </Link>
-              <span className="hidden items-center gap-2 md:flex">
-                <span className="max-w-[8rem] truncate font-medium text-slate-700">{user.name}</span>
+              <NotificationBell />
+              <Link to="/profile" className="hidden items-center gap-2 md:flex">
+                <span className="max-w-[8rem] truncate font-medium text-slate-700 hover:text-violet-600">{user.name}</span>
                 {roleBadge && <span className={`badge ${roleBadge.className}`}>{roleBadge.label}</span>}
-              </span>
+              </Link>
               <button
                 onClick={() => {
                   logout();

@@ -30,8 +30,9 @@ export function LearnerSchedule() {
 
   async function cancelBooking(id: string) {
     if (!confirm("Cancel this lesson?")) return;
+    const reason = prompt("Reason for cancelling (optional):") ?? undefined;
     try {
-      await api.put(`/bookings/${id}/status`, { status: "CANCELLED" });
+      await api.put(`/bookings/${id}/status`, { status: "CANCELLED", reason });
       load();
     } catch (err) {
       setError(getApiErrorMessage(err));
@@ -96,6 +97,9 @@ export function LearnerSchedule() {
                   <p className="mt-1 text-sm text-slate-600">
                     Progress notes: {b.lessonRecord.notes || "—"} ({b.lessonRecord.attendance})
                   </p>
+                )}
+                {b.cancellationReason && (
+                  <p className="mt-1 text-sm text-slate-500">Reason: {b.cancellationReason}</p>
                 )}
               </div>
               <span className={`badge ${STATUS_BADGE[b.status]} shrink-0`}>{b.status}</span>

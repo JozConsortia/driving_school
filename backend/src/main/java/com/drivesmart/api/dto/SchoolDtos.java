@@ -19,7 +19,7 @@ public class SchoolDtos {
 
     public record PricingEntry(String id, Double pricePerHour, LicenceCategoryDto licenceCategory) {}
 
-    public record ReviewView(String id, Integer rating, String comment, Instant createdAt, NameOnly user) {}
+    public record ReviewView(String id, Integer rating, String comment, Instant createdAt, String userId, NameOnly user) {}
 
     public record Profile(
             String id, String name, String description, String city, String address, String phone, String email,

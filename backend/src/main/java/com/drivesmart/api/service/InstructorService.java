@@ -83,6 +83,22 @@ public class InstructorService {
         return toDto(instructor);
     }
 
+    @Transactional(readOnly = true)
+    public InstructorDto getMine(String userId) {
+        Instructor instructor = instructorRepository.findByUserId(userId)
+                .orElseThrow(() -> ApiException.notFound("Instructor profile not found"));
+        return toDto(instructor);
+    }
+
+    @Transactional
+    public InstructorDto updateMyBio(String userId, String bio) {
+        Instructor instructor = instructorRepository.findByUserId(userId)
+                .orElseThrow(() -> ApiException.notFound("Instructor profile not found"));
+        instructor.setBio(bio);
+        instructorRepository.save(instructor);
+        return toDto(instructor);
+    }
+
     private InstructorDto toDto(Instructor i) {
         return new InstructorDto(i.getId(), i.getBio(), i.getStatus(),
                 new UserBasic(i.getUser().getId(), i.getUser().getName(), i.getUser().getEmail(), i.getUser().getPhone()));

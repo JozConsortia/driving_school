@@ -3,6 +3,7 @@ package com.drivesmart.api.service;
 import com.drivesmart.api.dto.CommonDtos.NameOnly;
 import com.drivesmart.api.dto.ReviewDtos.CreateRequest;
 import com.drivesmart.api.dto.ReviewDtos.ReviewView;
+import com.drivesmart.api.dto.ReviewDtos.UpdateRequest;
 import com.drivesmart.api.entity.DrivingSchool;
 import com.drivesmart.api.entity.Learner;
 import com.drivesmart.api.entity.Review;
@@ -71,9 +72,35 @@ public class ReviewService {
     }
 
     @Transactional
-    public void report(String reviewId) {
+    public void report(String userId, String reviewId) {
         Review review = reviewRepository.findById(reviewId).orElseThrow(() -> ApiException.notFound("Review not found"));
+        if (review.getUser().getId().equals(userId)) {
+            throw ApiException.forbidden("You can't report your own review");
+        }
         review.setStatus("REPORTED");
         reviewRepository.save(review);
+    }
+
+    @Transactional
+    public ReviewView update(String userId, String reviewId, UpdateRequest req) {
+        Review review = ownedReview(userId, reviewId);
+        review.setRating(req.rating());
+        review.setComment(req.comment());
+        reviewRepository.save(review);
+        return new ReviewView(review.getId(), review.getRating(), review.getComment(), review.getCreatedAt(),
+                new NameOnly(review.getUser().getName()));
+    }
+
+    @Transactional
+    public void delete(String userId, String reviewId) {
+        reviewRepository.delete(ownedReview(userId, reviewId));
+    }
+
+    private Review ownedReview(String userId, String reviewId) {
+        Review review = reviewRepository.findById(reviewId).orElseThrow(() -> ApiException.notFound("Review not found"));
+        if (!review.getUser().getId().equals(userId)) {
+            throw ApiException.notFound("Review not found");
+        }
+        return review;
     }
 }

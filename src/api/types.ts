@@ -7,6 +7,16 @@ export interface AuthUser {
   role: Role;
 }
 
+export interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  role: Role;
+  status: string;
+  createdAt: string;
+}
+
 export interface LicenceCategory {
   id: string;
   code: string;
@@ -58,7 +68,7 @@ export interface SchoolProfile {
   services: { id: string; pricePerHour: number; licenceCategory: LicenceCategory }[];
   instructors: Instructor[];
   vehicles: Vehicle[];
-  reviews: { id: string; rating: number; comment: string | null; createdAt: string; user: { name: string } }[];
+  reviews: { id: string; rating: number; comment: string | null; createdAt: string; userId: string; user: { name: string } }[];
 }
 
 export interface AvailabilitySlot {
@@ -82,6 +92,7 @@ export interface Booking {
   vehicle?: Vehicle | null;
   licenceCategory?: LicenceCategory;
   lessonRecord?: { notes: string | null; progress: string | null; attendance: string } | null;
+  cancellationReason?: string | null;
 }
 
 export interface ChatMessage {

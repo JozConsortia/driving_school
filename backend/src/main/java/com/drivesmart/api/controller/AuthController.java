@@ -32,4 +32,15 @@ public class AuthController {
     public MeResponse me() {
         return authService.me(CurrentUser.require());
     }
+
+    @PutMapping("/me")
+    public MeResponse updateProfile(@Valid @RequestBody UpdateProfileRequest req) {
+        return authService.updateProfile(CurrentUser.require(), req);
+    }
+
+    @PutMapping("/me/password")
+    public ResponseEntity<Void> changePassword(@Valid @RequestBody ChangePasswordRequest req) {
+        authService.changePassword(CurrentUser.require(), req);
+        return ResponseEntity.noContent().build();
+    }
 }

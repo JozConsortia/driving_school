@@ -98,6 +98,27 @@ public class AuthService {
                 user.getRole(), user.getStatus(), user.getCreatedAt());
     }
 
+    @Transactional
+    public MeResponse updateProfile(String userId, UpdateProfileRequest req) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> ApiException.notFound("User not found"));
+        user.setName(req.name());
+        user.setPhone(req.phone());
+        userRepository.save(user);
+        return me(userId);
+    }
+
+    @Transactional
+    public void changePassword(String userId, ChangePasswordRequest req) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> ApiException.notFound("User not found"));
+        if (!passwordEncoder.matches(req.currentPassword(), user.getPassword())) {
+            throw ApiException.badRequest("Current password is incorrect");
+        }
+        user.setPassword(passwordEncoder.encode(req.newPassword()));
+        userRepository.save(user);
+    }
+
     private static boolean isBlank(String s) {
         return s == null || s.isBlank();
     }

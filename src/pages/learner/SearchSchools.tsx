@@ -15,6 +15,7 @@ export function SearchSchools() {
   const [maxPrice, setMaxPrice] = useState("");
   const [minRating, setMinRating] = useState("");
   const [day, setDay] = useState("");
+  const [sort, setSort] = useState("");
   const [results, setResults] = useState<SchoolSearchResult[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -22,7 +23,7 @@ export function SearchSchools() {
     api.get<LicenceCategory[]>("/licence-categories").then((res) => setCategories(res.data));
   }, []);
 
-  async function runSearch(e?: React.FormEvent) {
+  async function runSearch(e?: React.FormEvent, sortOverride?: string) {
     e?.preventDefault();
     setLoading(true);
     try {
@@ -32,11 +33,18 @@ export function SearchSchools() {
       if (maxPrice) params.maxPrice = maxPrice;
       if (minRating) params.minRating = minRating;
       if (day) params.day = day;
+      const effectiveSort = sortOverride ?? sort;
+      if (effectiveSort) params.sort = effectiveSort;
       const res = await api.get<SchoolSearchResult[]>("/schools", { params });
       setResults(res.data);
     } finally {
       setLoading(false);
     }
+  }
+
+  function changeSort(value: string) {
+    setSort(value);
+    runSearch(undefined, value);
   }
 
   useEffect(() => {
@@ -99,7 +107,20 @@ export function SearchSchools() {
       </form>
 
       <div className="mt-8">
-        {loading && <p className="text-slate-500">Searching...</p>}
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+          <p className="text-sm text-slate-500">
+            {loading ? "Searching..." : `${results.length} school${results.length === 1 ? "" : "s"} found`}
+          </p>
+          <div className="flex items-center gap-2">
+            <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">Sort by</label>
+            <select value={sort} onChange={(e) => changeSort(e.target.value)} className="input w-auto">
+              <option value="">Relevance</option>
+              <option value="rating">Top rated</option>
+              <option value="price_low">Price: low to high</option>
+              <option value="price_high">Price: high to low</option>
+            </select>
+          </div>
+        </div>
         {!loading && results.length === 0 && (
           <div className="card p-8 text-center text-slate-500">No driving schools match your search.</div>
         )}
