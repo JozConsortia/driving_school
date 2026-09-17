@@ -1,6 +1,7 @@
 package com.drivesmart.api.service;
 
 import com.drivesmart.api.dto.AdminDtos.*;
+import com.drivesmart.api.dto.AuditLogDto;
 import com.drivesmart.api.dto.CommonDtos.NameOnly;
 import com.drivesmart.api.entity.*;
 import com.drivesmart.api.exception.ApiException;
@@ -21,6 +22,7 @@ public class AdminService {
     private final BookingRepository bookingRepository;
     private final ReviewRepository reviewRepository;
     private final NotificationService notificationService;
+    private final AuditLogService auditLogService;
 
     public AdminService(
             UserRepository userRepository,
@@ -30,7 +32,8 @@ public class AdminService {
             VehicleRepository vehicleRepository,
             BookingRepository bookingRepository,
             ReviewRepository reviewRepository,
-            NotificationService notificationService) {
+            NotificationService notificationService,
+            AuditLogService auditLogService) {
         this.userRepository = userRepository;
         this.learnerRepository = learnerRepository;
         this.instructorRepository = instructorRepository;
@@ -39,6 +42,7 @@ public class AdminService {
         this.bookingRepository = bookingRepository;
         this.reviewRepository = reviewRepository;
         this.notificationService = notificationService;
+        this.auditLogService = auditLogService;
     }
 
     public Stats stats() {
@@ -71,12 +75,15 @@ public class AdminService {
     }
 
     @Transactional
-    public SchoolView setSchoolStatus(String schoolId, String status) {
+    public SchoolView setSchoolStatus(String actorId, String schoolId, String status) {
         DrivingSchool school = schoolRepository.findById(schoolId)
                 .orElseThrow(() -> ApiException.notFound("School not found"));
+        String previousStatus = school.getStatus();
         school.setStatus(status);
         schoolRepository.save(school);
         notificationService.notify(school.getOwner(), "Your school \"" + school.getName() + "\" status was updated to " + status);
+        auditLogService.log(actor(actorId), "SCHOOL_STATUS_CHANGED",
+                "School \"" + school.getName() + "\" status changed from " + previousStatus + " to " + status);
         return new SchoolView(
                 school.getId(), school.getName(), school.getCity(), school.getStatus(),
                 new OwnerView(school.getOwner().getName(), school.getOwner().getEmail(), school.getOwner().getPhone()),
@@ -94,10 +101,13 @@ public class AdminService {
     }
 
     @Transactional
-    public UserView setUserStatus(String userId, String status) {
+    public UserView setUserStatus(String actorId, String userId, String status) {
         User user = userRepository.findById(userId).orElseThrow(() -> ApiException.notFound("User not found"));
+        String previousStatus = user.getStatus();
         user.setStatus(status);
         userRepository.save(user);
+        auditLogService.log(actor(actorId), "USER_STATUS_CHANGED",
+                "User \"" + user.getEmail() + "\" status changed from " + previousStatus + " to " + status);
         return new UserView(user.getId(), user.getName(), user.getEmail(), user.getPhone(), user.getRole(), user.getStatus(), user.getCreatedAt());
     }
 
@@ -111,9 +121,22 @@ public class AdminService {
     }
 
     @Transactional
-    public void setReviewStatus(String reviewId, String status) {
+    public void setReviewStatus(String actorId, String reviewId, String status) {
         Review review = reviewRepository.findById(reviewId).orElseThrow(() -> ApiException.notFound("Review not found"));
+        String previousStatus = review.getStatus();
         review.setStatus(status);
         reviewRepository.save(review);
+        auditLogService.log(actor(actorId), "REVIEW_STATUS_CHANGED",
+                "Review on \"" + review.getSchool().getName() + "\" (by " + review.getUser().getName() + ") changed from "
+                        + previousStatus + " to " + status);
+    }
+
+    @Transactional(readOnly = true)
+    public List<AuditLogDto> auditLog() {
+        return auditLogService.recent();
+    }
+
+    private User actor(String actorId) {
+        return userRepository.findById(actorId).orElse(null);
     }
 }

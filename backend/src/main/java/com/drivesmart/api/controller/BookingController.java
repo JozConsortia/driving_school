@@ -3,8 +3,11 @@ package com.drivesmart.api.controller;
 import com.drivesmart.api.dto.BookingDtos.*;
 import com.drivesmart.api.security.CurrentUser;
 import com.drivesmart.api.service.BookingService;
+import com.drivesmart.api.service.ExcelExportService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -16,9 +19,11 @@ import java.util.List;
 public class BookingController {
 
     private final BookingService bookingService;
+    private final ExcelExportService excelExportService;
 
-    public BookingController(BookingService bookingService) {
+    public BookingController(BookingService bookingService, ExcelExportService excelExportService) {
         this.bookingService = bookingService;
+        this.excelExportService = excelExportService;
     }
 
     @PostMapping
@@ -37,6 +42,16 @@ public class BookingController {
     @PreAuthorize("hasRole('INSTRUCTOR')")
     public List<BookingDto> instructorMine() {
         return bookingService.mineForInstructor(CurrentUser.require());
+    }
+
+    @GetMapping("/instructor/mine/export")
+    @PreAuthorize("hasRole('INSTRUCTOR')")
+    public ResponseEntity<byte[]> exportInstructorMine() {
+        byte[] bytes = excelExportService.exportInstructorAppointments(CurrentUser.require());
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"my-appointments.xlsx\"")
+                .body(bytes);
     }
 
     @GetMapping("/school/mine")

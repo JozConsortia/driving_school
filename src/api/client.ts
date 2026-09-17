@@ -10,6 +10,19 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+/** Downloads a file (e.g. an Excel export) from the API and saves it in the browser. */
+export async function downloadFile(url: string, filename: string): Promise<void> {
+  const res = await api.get(url, { responseType: "blob" });
+  const blobUrl = window.URL.createObjectURL(res.data as Blob);
+  const link = document.createElement("a");
+  link.href = blobUrl;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.URL.revokeObjectURL(blobUrl);
+}
+
 export function getApiErrorMessage(err: unknown): string {
   if (axios.isAxiosError(err)) {
     const data = err.response?.data as { error?: unknown } | undefined;

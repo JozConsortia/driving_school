@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { api, getApiErrorMessage } from "../../api/client";
+import { api, downloadFile, getApiErrorMessage } from "../../api/client";
 import { StatTile } from "../../components/StatTile";
-import { CalendarIcon, CheckCircleIcon, UsersIcon } from "../../components/icons";
+import { CalendarIcon, CheckCircleIcon, DownloadIcon, UsersIcon } from "../../components/icons";
 import type { AvailabilitySlot, Booking, Instructor } from "../../api/types";
 
 type Tab = "schedule" | "availability" | "profile";
@@ -20,6 +20,18 @@ export function InstructorDashboard() {
   const [slots, setSlots] = useState<AvailabilitySlot[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [completing, setCompleting] = useState<Booking | null>(null);
+  const [exporting, setExporting] = useState(false);
+
+  async function exportAppointments() {
+    setExporting(true);
+    try {
+      await downloadFile("/bookings/instructor/mine/export", "my-appointments.xlsx");
+    } catch (err) {
+      setError(getApiErrorMessage(err));
+    } finally {
+      setExporting(false);
+    }
+  }
 
   function loadBookings() {
     api.get<Booking[]>("/bookings/instructor/mine").then((res) => setBookings(res.data));
@@ -37,7 +49,13 @@ export function InstructorDashboard() {
 
   return (
     <div className="page-shell mx-auto max-w-5xl">
-      <h1 className="text-2xl font-extrabold text-slate-900">Instructor dashboard</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl font-extrabold text-slate-900">Instructor dashboard</h1>
+        <button onClick={exportAppointments} disabled={exporting} className="btn btn-primary btn-sm">
+          <DownloadIcon className="h-4 w-4" />
+          {exporting ? "Preparing..." : "Appointments"}
+        </button>
+      </div>
 
       <div className="mt-5 grid grid-cols-3 gap-3">
         <StatTile

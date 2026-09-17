@@ -54,6 +54,10 @@ public class ReviewService {
         DrivingSchool school = schoolRepository.findById(req.schoolId())
                 .orElseThrow(() -> ApiException.notFound("School not found"));
 
+        if (school.getOwner().getId().equals(userId)) {
+            throw ApiException.forbidden("You can't review your own school");
+        }
+
         boolean hasCompleted = bookingRepository.existsByLearnerIdAndSchoolIdAndStatus(learner.getId(), school.getId(), "COMPLETED");
         if (!hasCompleted) {
             throw ApiException.forbidden("You can only review a school after completing a lesson there");
@@ -76,6 +80,9 @@ public class ReviewService {
         Review review = reviewRepository.findById(reviewId).orElseThrow(() -> ApiException.notFound("Review not found"));
         if (review.getUser().getId().equals(userId)) {
             throw ApiException.forbidden("You can't report your own review");
+        }
+        if (review.getSchool().getOwner().getId().equals(userId)) {
+            throw ApiException.forbidden("You can't report reviews on your own school");
         }
         review.setStatus("REPORTED");
         reviewRepository.save(review);

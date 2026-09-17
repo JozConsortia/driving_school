@@ -136,6 +136,24 @@ export function SendIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
+export function DownloadIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <path d="M12 4v11.5M7.5 11l4.5 4.5L16.5 11" />
+      <path d="M4.5 18.5h15" />
+    </Icon>
+  );
+}
+
+export function ShieldIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <path d="M12 3.5 19 6.5v5c0 5-3 8-7 9-4-1-7-4-7-9v-5Z" />
+      <path d="m9 12 2 2 4-4.5" />
+    </Icon>
+  );
+}
+
 export function BellIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <Icon {...props}>

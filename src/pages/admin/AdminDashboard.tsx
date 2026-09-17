@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api, getApiErrorMessage } from "../../api/client";
+import { api, downloadFile, getApiErrorMessage } from "../../api/client";
 import { StatTile, type StatTileColor } from "../../components/StatTile";
 import { StarRating } from "../../components/StarRating";
 import {
@@ -8,12 +8,14 @@ import {
   CheckCircleIcon,
   ClipboardIcon,
   ClockIcon,
+  DownloadIcon,
+  ShieldIcon,
   SteeringWheelIcon,
   UserIcon,
   UsersIcon,
 } from "../../components/icons";
 
-type Tab = "overview" | "schools" | "users" | "reviews";
+type Tab = "overview" | "schools" | "users" | "reviews" | "audit";
 
 interface Stats {
   totalUsers: number;
@@ -57,19 +59,37 @@ export function AdminDashboard() {
   const [tab, setTab] = useState<Tab>("overview");
   const [stats, setStats] = useState<Stats | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     api.get<Stats>("/admin/stats").then((res) => setStats(res.data));
   }, []);
 
+  async function exportReport() {
+    setExporting(true);
+    try {
+      await downloadFile("/admin/export", "drivesmart-report.xlsx");
+    } catch (err) {
+      setError(getApiErrorMessage(err));
+    } finally {
+      setExporting(false);
+    }
+  }
+
   return (
     <div className="page-shell mx-auto max-w-6xl">
-      <h1 className="text-2xl font-extrabold text-slate-900">System administration</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl font-extrabold text-slate-900">System administration</h1>
+        <button onClick={exportReport} disabled={exporting} className="btn btn-primary btn-sm">
+          <DownloadIcon className="h-4 w-4" />
+          {exporting ? "Preparing..." : "Report"}
+        </button>
+      </div>
 
-      <div className="mt-6 flex gap-1 border-b border-slate-200">
-        {(["overview", "schools", "users", "reviews"] as Tab[]).map((t) => (
+      <div className="mt-6 flex gap-1 overflow-x-auto border-b border-slate-200">
+        {(["overview", "schools", "users", "reviews", "audit"] as Tab[]).map((t) => (
           <button key={t} onClick={() => setTab(t)} className={`tab-btn capitalize ${tab === t ? "tab-btn-active" : ""}`}>
-            {t}
+            {t === "audit" ? "Audit Log" : t}
           </button>
         ))}
       </div>
@@ -96,6 +116,7 @@ export function AdminDashboard() {
       {tab === "schools" && <SchoolsTab setError={setError} />}
       {tab === "users" && <UsersTab setError={setError} />}
       {tab === "reviews" && <ReviewsTab setError={setError} />}
+      {tab === "audit" && <AuditLogTab setError={setError} />}
     </div>
   );
 }
@@ -277,6 +298,76 @@ function ReviewsTab({ setError }: { setError: (e: string | null) => void }) {
         </div>
       ))}
       {reviews.length === 0 && <div className="card p-8 text-center text-slate-500">No reported reviews.</div>}
+    </div>
+  );
+}
+
+interface AuditLogEntry {
+  id: string;
+  actorName: string;
+  actorEmail: string | null;
+  action: string;
+  details: string | null;
+  createdAt: string;
+}
+
+const ACTION_BADGE: Record<string, string> = {
+  SCHOOL_STATUS_CHANGED: "badge-violet",
+  USER_STATUS_CHANGED: "badge-blue",
+  REVIEW_STATUS_CHANGED: "badge-amber",
+};
+
+const ACTION_LABEL: Record<string, string> = {
+  SCHOOL_STATUS_CHANGED: "School status",
+  USER_STATUS_CHANGED: "User status",
+  REVIEW_STATUS_CHANGED: "Review status",
+};
+
+function AuditLogTab({ setError }: { setError: (e: string | null) => void }) {
+  const [entries, setEntries] = useState<AuditLogEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api
+      .get<AuditLogEntry[]>("/admin/audit-log")
+      .then((res) => setEntries(res.data))
+      .catch((err) => setError(getApiErrorMessage(err)))
+      .finally(() => setLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return (
+    <div className="mt-6">
+      <div className="flex items-center gap-2 text-sm text-slate-500">
+        <ShieldIcon className="h-4 w-4 text-violet-500" />
+        A record of every school, user, and review moderation action taken by system admins.
+      </div>
+
+      <div className="mt-4 space-y-2">
+        {loading && <p className="text-slate-500">Loading...</p>}
+        {!loading &&
+          entries.map((e) => (
+            <div key={e.id} className="card flex flex-wrap items-start justify-between gap-3 p-4">
+              <div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className={`badge ${ACTION_BADGE[e.action] ?? "badge-slate"}`}>{ACTION_LABEL[e.action] ?? e.action}</span>
+                  <p className="text-sm font-semibold text-slate-900">{e.actorName}</p>
+                  {e.actorEmail && <p className="text-xs text-slate-400">({e.actorEmail})</p>}
+                </div>
+                {e.details && <p className="mt-1.5 text-sm text-slate-600">{e.details}</p>}
+              </div>
+              <p className="shrink-0 text-xs text-slate-400">
+                {new Date(e.createdAt).toLocaleString(undefined, {
+                  dateStyle: "medium",
+                  timeStyle: "short",
+                })}
+              </p>
+            </div>
+          ))}
+        {!loading && entries.length === 0 && (
+          <div className="card p-8 text-center text-slate-500">No admin actions recorded yet.</div>
+        )}
+      </div>
     </div>
   );
 }

@@ -51,6 +51,10 @@ export function SchoolProfile() {
       navigate("/login");
       return;
     }
+    if (user.role !== "LEARNER") {
+      setBookingError("Only learner accounts can book lessons.");
+      return;
+    }
     setSubmitting(true);
     setBookingError(null);
     try {
@@ -272,9 +276,15 @@ export function SchoolProfile() {
             </p>
           )}
 
-          <button onClick={submitBooking} disabled={!selectedSlot || submitting} className="btn btn-primary mt-4">
-            {submitting ? "Booking..." : user ? "Book this lesson" : "Log in to book"}
-          </button>
+          {user && user.role !== "LEARNER" ? (
+            <p className="mt-4 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-700">
+              Only learner accounts can book lessons — log in with a learner account to book.
+            </p>
+          ) : (
+            <button onClick={submitBooking} disabled={!selectedSlot || submitting} className="btn btn-primary mt-4">
+              {submitting ? "Booking..." : user ? "Book this lesson" : "Log in to book"}
+            </button>
+          )}
         </div>
       )}
 
